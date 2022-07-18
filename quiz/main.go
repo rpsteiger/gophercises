@@ -23,7 +23,8 @@ type question struct {
 }
 
 func printBanner() {
-	fmt.Printf(`   _____ ______  _______  __    ______   ____  __  ___________
+	fmt.Printf(`
+   _____ ______  _______  __    ______   ____  __ ___________
   / ___//  _/  |/  / __ \/ /   / ____/  / __ \/ / / /  _/__  /
   \__ \ / // /|_/ / /_/ / /   / __/    / / / / / / // /   / / 
  ___/ // // /  / / ____/ /___/ /___   / /_/ / /_/ // /   / /__
@@ -70,7 +71,8 @@ func init() {
 func main() {
 	flag.Parse()
 
-	questions := readFile(questionsFilename)
+	reader := openFile(questionsFilename)
+	questions := readProblems(reader)
 	timer := time.NewTimer(time.Second * time.Duration(timeLimit))
 
 	correct := 0
@@ -105,13 +107,16 @@ func main() {
 	printResult(correct, wrong)
 }
 
-func readFile(filename string) []question {
+func openFile(filename string) io.Reader {
 	f, err := os.Open(filename)
 	if err != nil {
 		log.Panicf("Error while opening file '%s': %v\n", filename, err)
 	}
 	defer f.Close()
+	return f
+}
 
+func readProblems(f io.Reader) []question {
 	csvR := csv.NewReader(f)
 	results := make([]question, 0, 20)
 
