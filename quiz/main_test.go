@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 	"testing"
@@ -33,17 +34,11 @@ func TestOpenFile_BadFilename(t *testing.T) {
 	openFile("./ljkasjf908asfasfia.gopher")
 }
 
-func TestReadProblems_Normal(t *testing.T) {
+func ExampleReadProblems() {
 	r := strings.NewReader("5+5,10\n1+1,2\n8+3,11")
-	expected := []question{
-		{"5+5", "10"},
-		{"1+1", "2"},
-		{"8+3", "11"},
-	}
-	actual := readProblems(r)
-	if !reflect.DeepEqual(actual, expected) {
-		t.Error("expected", expected, "got", actual)
-	}
+	fmt.Println(readProblems(r))
+	// Output:
+	// [{5+5 10} {1+1 2} {8+3 11}]
 }
 
 func TestReadProblems_TabsAtStartOfLine(t *testing.T) {
