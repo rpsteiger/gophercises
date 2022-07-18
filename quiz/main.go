@@ -129,7 +129,7 @@ func readProblems(f io.Reader) []question {
 		}
 
 		q := question{
-			questionStr: record[0],
+			questionStr: strings.TrimSpace(record[0]),
 			answer:      strings.TrimSpace(record[1]),
 		}
 		results = append(results, q)

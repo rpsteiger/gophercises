@@ -45,3 +45,29 @@ func TestReadProblems_Normal(t *testing.T) {
 		t.Error("expected", expected, "got", actual)
 	}
 }
+
+func TestReadProblems_TabsAtStartOfLine(t *testing.T) {
+	r := strings.NewReader("\t5+5,\t10\n\t1+1,\t2\n\t8+3,\t11")
+	expected := []question{
+		{"5+5", "10"},
+		{"1+1", "2"},
+		{"8+3", "11"},
+	}
+	actual := readProblems(r)
+	if !reflect.DeepEqual(actual, expected) {
+		t.Error("expected", expected, "got", actual)
+	}
+}
+
+func TestReadProblems_TabsAtEndOfline(t *testing.T) {
+	r := strings.NewReader("5+5\t,10\t\n1+1\t,2\t\n8+3\t,11\t")
+	expected := []question{
+		{"5+5", "10"},
+		{"1+1", "2"},
+		{"8+3", "11"},
+	}
+	actual := readProblems(r)
+	if !reflect.DeepEqual(actual, expected) {
+		t.Error("expected", expected, "got", actual)
+	}
+}
