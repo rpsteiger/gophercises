@@ -52,6 +52,11 @@ func printStatsLine(correct int, wrong int) {
 	fmt.Printf("\n")
 }
 
+func printProblemLine(i int, q question) {
+	ct.Foreground(ct.Blue, false)
+	fmt.Printf("#%d: %s ?\n", i+1, q.questionStr)
+}
+
 var questionsFilename string
 var timeLimit int
 
@@ -73,26 +78,27 @@ func main() {
 
 	reader := openFile(questionsFilename)
 	questions := readProblems(reader)
-	timer := time.NewTimer(time.Second * time.Duration(timeLimit))
 
-	correct := 0
-	wrong := 0
 	printBanner()
+	correct, wrong := playGame(questions, os.Stdin, time.Second*time.Duration(timeLimit))
+	printResult(correct, wrong)
+}
 
-	for i, q := range questions {
+func playGame(qs []question, input io.Reader, timeLimit time.Duration) (correct int, wrong int) {
+	t := time.NewTimer(timeLimit)
+	for i, q := range qs {
 		printStatsLine(correct, wrong)
-		ct.Foreground(ct.Blue, false)
-		fmt.Printf("#%d: %s ?\n", i+1, q.questionStr)
+		printProblemLine(i, q)
 
 		answerCh := make(chan string)
 		go func() {
 			var answer string
-			fmt.Scanln(&answer)
+			fmt.Fscanf(input, "%s\n", &answer)
 			answerCh <- answer
 		}()
 
 		select {
-		case <-timer.C:
+		case <-t.C:
 			printResult(correct, wrong)
 			return
 		case answer := <-answerCh:
@@ -104,7 +110,7 @@ func main() {
 			close(answerCh)
 		}
 	}
-	printResult(correct, wrong)
+	return 0, 0
 }
 
 func openFile(filename string) io.Reader {
@@ -112,7 +118,6 @@ func openFile(filename string) io.Reader {
 	if err != nil {
 		log.Panicf("Error while opening file '%s': %v\n", filename, err)
 	}
-	defer f.Close()
 	return f
 }
 
@@ -122,10 +127,13 @@ func readProblems(f io.Reader) []question {
 
 	for {
 		record, err := csvR.Read()
+
 		if err == io.EOF {
 			break
 		} else if err != nil {
 			log.Panicf("Error while reading csv line: %v\n", err)
+		} else if len(record) < 2 || len(record) > 2 {
+			log.Panic("Error while reading problems: row only has one value!", "\n", record)
 		}
 
 		q := question{
